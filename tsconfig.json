@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+      "outDir": "./dist/",
+      "sourceMap": true,
+      "noImplicitAny": true,
+      "declaration": true,
+      "module": "CommonJS",
+      "moduleResolution": "node",
+      "target": "es5",
+      "jsx": "react"
+    },
+    "include": [
+        "src/*", "src/game/Board.js", "src/game/Connect4Game.ts", "src/game/Connect4Play.ts"
+    ],
+    "exclude": [
+      "**/*.test.ts"
+    ]
+}
