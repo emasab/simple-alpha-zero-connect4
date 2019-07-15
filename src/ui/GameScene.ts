@@ -1,8 +1,7 @@
 import Connect4Play from '../game/Connect4Play'
-
+import Loading from './Loading'
 
 export default class GameScene extends Phaser.Scene {
-
 
     private connect4Play: Connect4Play
 
@@ -22,6 +21,8 @@ export default class GameScene extends Phaser.Scene {
 
     private readonly worldBounds = new Phaser.Geom.Rectangle(0, 0, 200, 150);
 
+    private loading : Loading
+
     constructor() {
         super({
             key: "GameScene"
@@ -30,17 +31,48 @@ export default class GameScene extends Phaser.Scene {
 
     preload ()
     {
-        this.load.setBaseURL('');
-        this.load.image('board', 'img/board.png');
-        this.load.image('redcircle', 'img/redcircle.png');
-        this.load.image('yellowcircle', 'img/yellowcircle.png');
-        this.load.image('background', 'img/background.jpg');
-        this.load.image('bottom', 'img/bottom.png');
-        this.load.image('playerwins', 'img/playerwins.png');
-        this.load.image('gpuwins', 'img/gpuwins.png');
-        this.load.image('playervsgpu', 'img/playervsgpu.png');
-        this.load.image('notsupported', 'img/notsupported.png');
-        this.load.image('tie', 'img/tie.png');
+        this.load.setBaseURL('')
+        this.load.image('board', 'img/board.png')
+        this.load.image('redcircle', 'img/redcircle.png')
+        this.load.image('yellowcircle', 'img/yellowcircle.png')
+        this.load.image('background', 'img/background.jpg')
+        this.load.image('bottom', 'img/bottom.png')
+        this.load.image('playerwins', 'img/playerwins.png')
+        this.load.image('gpuwins', 'img/gpuwins.png')
+        this.load.image('playervsgpu', 'img/playervsgpu.png')
+        this.load.image('notsupported', 'img/notsupported.png')
+        this.load.image('tie', 'img/tie.png')
+    }
+
+    preloadGame(){
+        let play = async ()=>{
+            this.setPlayEnabled(true)
+            return this.chosenPromise
+        }
+
+        let played = async (x: integer)=>{
+            this.setPlayEnabled(false)
+            this.setAbsolutePosition(x)
+            this.letStoneFall()
+            return this.playedPromise
+        }
+
+        let gameEnded = async (winner: integer)=>{
+            this.setPlayEnabled(false)
+            this.stone.setVisible(false)
+            this.gameEnded(winner)
+        }
+
+        this.connect4Play = new Connect4Play()
+        this.connect4Play.init(play, played, gameEnded)
+        .then((player)=>{
+            this.setupPlayer(player)
+            this.loading.destroy()
+            this.loading = null
+            return this.connect4Play.play()
+        }).then(()=>{},(error)=>{
+            this.showNotSupported()
+        })
     }
 
     setPlayEnabled(enabled: boolean){
@@ -140,36 +172,16 @@ export default class GameScene extends Phaser.Scene {
         notsupported.depth = 5
     }
 
+    update(){
+        if(this.loading!=null) this.loading.update()
+    }
+
     create ()
     {
     
-        let play = async ()=>{
-            this.setPlayEnabled(true)
-            return this.chosenPromise
-        }
+        this.loading = new Loading()
+        this.loading.create(this)
 
-        let played = async (x: integer)=>{
-            this.setPlayEnabled(false)
-            this.setAbsolutePosition(x)
-            this.letStoneFall()
-            return this.playedPromise
-        }
-
-        let gameEnded = async (winner: integer)=>{
-            this.setPlayEnabled(false)
-            this.stone.setVisible(false)
-            this.gameEnded(winner)
-        }
-
-        this.connect4Play = new Connect4Play()
-        this.connect4Play.init(play, played, gameEnded)
-        .then((player)=>{
-            this.setupPlayer(player)
-            return this.connect4Play.play()
-        }).then(()=>{},(error)=>{
-            this.showNotSupported()
-        })
-    
         var board = this.add.image(100, 91, 'board');
         var background = this.add.image(100, 75, 'background');
         this.add.image(155, 8, 'playervsgpu');
@@ -203,5 +215,7 @@ export default class GameScene extends Phaser.Scene {
                 if(allowed) this.choose(idx)
             }
         })
+        
+        this.preloadGame()
     }
 }

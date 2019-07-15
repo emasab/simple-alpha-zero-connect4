@@ -8,8 +8,10 @@ export default class GameScene extends Phaser.Scene {
     private played;
     private player;
     private readonly worldBounds;
+    private loading;
     constructor();
     preload(): void;
+    preloadGame(): void;
     setPlayEnabled(enabled: boolean): void;
     getIndex(x: integer): number;
     getAbsolutePos(index: integer): number;
@@ -19,5 +21,6 @@ export default class GameScene extends Phaser.Scene {
     nextPlayer(): void;
     gameEnded(outcome: integer): void;
     showNotSupported(): void;
+    update(): void;
     create(): void;
 }
