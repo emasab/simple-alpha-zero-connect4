@@ -1,12 +1,12 @@
-import { Tensor, Rank } from "@tensorflow/tfjs";
+import { Tensor, GraphModel } from "@tensorflow/tfjs";
 export default class NNet {
     private dropout;
     private isTraining;
     private nnet;
     constructor();
-    loadGraphModelAsync(getGraphModel: string | (() => Promise<any>)): Promise<void>;
+    loadGraphModelAsync(getGraphModel: string | (() => Promise<GraphModel>)): Promise<void>;
     predict(board: Tensor): Promise<{
-        prob: Tensor<Rank>;
+        prob: Tensor;
         v: number;
     }>;
 }

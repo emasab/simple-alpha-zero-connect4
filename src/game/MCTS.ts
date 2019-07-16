@@ -1,23 +1,22 @@
-import Connect4Game from "./Connect4Game";
-import NNet from "./nn/NNet";
-import { Tensor, prod } from "@tensorflow/tfjs";
+import Connect4Game from "./Connect4Game"
+import NNet from "./nn/NNet"
+import { Tensor } from "@tensorflow/tfjs"
 import * as tf from '@tensorflow/tfjs'
-import { sum } from "@tensorflow/tfjs-core/dist/util";
 
 const EPS = 1e-8
 
-export default class MCTS {
+export default class MCTS{
     private nnet: NNet
     private game: Connect4Game
-    private args: any
-    private Qsa: {[s: string]: number; }
-    private Nsa: {[s: string]: number; }
-    private Ns: {[s: string]: number;}
-    private Ps: { [s: string]: Tensor; }
-    private Es: {[s: string]: number;}
-    private Vs: {[s: string]: Tensor; }
+    private args: {numMCTSSims: number; cpuct: number}
+    private Qsa: {[s: string]: number }
+    private Nsa: {[s: string]: number }
+    private Ns: {[s: string]: number}
+    private Ps: { [s: string]: Tensor }
+    private Es: {[s: string]: number}
+    private Vs: {[s: string]: Tensor }
 
-    constructor(game : Connect4Game, nnet: NNet, args: any){
+    public constructor(game: Connect4Game, nnet: NNet, args: {numMCTSSims: number; cpuct: number}){
         this.game  = game
         this.nnet = nnet
         this.args = args
@@ -30,7 +29,7 @@ export default class MCTS {
         this.Vs = {}
     }
 
-    async getActionProb(canonicalBoard : Tensor, temp : number=1) : Promise<number[]>{
+    public async getActionProb(canonicalBoard: Tensor, temp: number=1): Promise<number[]>{
         for(let i=0;i<this.args.numMCTSSims;i++){
             await this.search(canonicalBoard)
         }
@@ -61,10 +60,10 @@ export default class MCTS {
         }
 
         let countTensor = tf.tensor(counts)
-        return <number[]> await countTensor.pow(1/temp).div(countTensor.sum()).array()
+        return await countTensor.pow(1/temp).div(countTensor.sum()).array() as number[]
     }
 
-    async search(canonicalBoard: Tensor) : Promise<number> {
+    public async search(canonicalBoard: Tensor): Promise<number>{
         let s = this.game.stringRepresentation(canonicalBoard)
 
         if(this.Es[s]===undefined){
@@ -76,10 +75,10 @@ export default class MCTS {
 
         if(this.Ps[s]===undefined){
             let pred = await this.nnet.predict(canonicalBoard)
-            let prob : Tensor = pred.prob
-            let valids : Tensor = this.game.getValidMoves(canonicalBoard, 1)
+            let prob: Tensor = pred.prob
+            let valids: Tensor = this.game.getValidMoves(canonicalBoard)
             this.Ps[s] = valids.mul(prob)
-            let sumPsS : number = <number> await tf.sum(this.Ps[s]).array()
+            let sumPsS: number = await tf.sum(this.Ps[s]).array() as number
             if(sumPsS>0){
                 this.Ps[s] = this.Ps[s].div(sumPsS)
             } else {

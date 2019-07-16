@@ -14,6 +14,6 @@ export default class Connect4Play {
     private gameEnded;
     constructor();
     init(player: playerPlay, played: playerPlayed, gameEnded: gameEnded): Promise<integer>;
-    isAllowed(action: integer): number;
+    isAllowed(action: integer): boolean;
     play(): Promise<void>;
 }

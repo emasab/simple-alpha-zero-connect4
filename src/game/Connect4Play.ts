@@ -4,15 +4,15 @@ import Connect4Game from './Connect4Game'
 import NNet from './nn/NNet'
 import MCTS from './MCTS'
 
-export type playerPlay = (x: Tensor)=>Promise<number>
+export type playerPlay = (x: Tensor) => Promise<number>
 
-export type playerPlayed = (x: integer)=>Promise<void>
+export type playerPlayed = (x: integer) => Promise<void>
 
-export type gameEnded = (winner: integer)=>Promise<void>
+export type gameEnded = (winner: integer) => Promise<void>
 
-export default class Connect4Play {
+export default class Connect4Play{
 
-    private nnet : NNet
+    private nnet: NNet
 
     private game: Connect4Game
 
@@ -30,9 +30,9 @@ export default class Connect4Play {
 
     private gameEnded: gameEnded
 
-    constructor(){}
+    public constructor(){}
 
-    async init(player: playerPlay, played: playerPlayed, gameEnded: gameEnded): Promise<integer>{
+    public async init(player: playerPlay, played: playerPlayed, gameEnded: gameEnded): Promise<integer>{
         this.nnet = new NNet()
         await this.nnet.loadGraphModelAsync('nn/model.json')
 
@@ -43,8 +43,8 @@ export default class Connect4Play {
             cpuct:1.0
         })
 
-        this.cpuPlayer = async (x: Tensor)=>{
-            let actionProb : number[] = await this.mtcs.getActionProb(x, 0)
+        this.cpuPlayer = async (x: Tensor): Promise<integer> =>{
+            let actionProb: number[] = await this.mtcs.getActionProb(x, 0)
             let argMax = await tf.argMax(actionProb).data()
             return argMax[0]
         }
@@ -58,22 +58,24 @@ export default class Connect4Play {
         return this.player
     }
 
-    isAllowed(action: integer){
-        let validMoves : number[][] = <number[][]> this.game.getValidMoves(this.board, -1).arraySync()
-        return validMoves[0][action]
+    public isAllowed(action: integer): boolean{
+        let validMoves: number[][] = this.game.getValidMoves(this.board).arraySync() as number[][]
+        return validMoves[0][action]==1
     }
 
-    async play() {
+    public async play(): Promise<void>{
         var gameEnded = this.game.getGameEnded(this.board, -1)
         while(!gameEnded){
-            let idx : integer = this.player>0 ? 1 : 0
-            let action : integer = await this.players[idx](this.board)
+            let idx: integer = this.player>0 ? 1 : 0
+            let action: integer = await this.players[idx](this.board)
             let {board, player} = await this.game.getNextState(this.board, this.player, action)
             this.board = board
             this.player = player
             await this.played(action)
             gameEnded = this.game.getGameEnded(this.board, -1)
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise((resolve: Function): void => {
+                setTimeout(resolve, 500)
+            })
         }
         this.gameEnded(gameEnded)
     }

@@ -1,7 +1,8 @@
+import * as Phaser from 'phaser'
 import Connect4Play from '../game/Connect4Play'
 import Loading from './Loading'
 
-export default class GameScene extends Phaser.Scene {
+export default class GameScene extends Phaser.Scene{
 
     private connect4Play: Connect4Play
 
@@ -11,25 +12,25 @@ export default class GameScene extends Phaser.Scene {
 
     private chosenPromise: Promise<integer>
 
-    private choose: (x: integer)=>void
+    private choose: (x: integer) => void
 
     private playedPromise: Promise<void>
 
-    private played: ()=>void
+    private played: () => void
 
     private player: integer
 
     private readonly worldBounds = new Phaser.Geom.Rectangle(0, 0, 200, 150);
 
-    private loading : Loading
+    private loading: Loading
 
-    constructor() {
+    public constructor(){
         super({
             key: "GameScene"
-        });
+        })
     }
 
-    preload ()
+    public preload(): void
     {
         this.load.setBaseURL('')
         this.load.image('board', 'img/board.png')
@@ -44,20 +45,20 @@ export default class GameScene extends Phaser.Scene {
         this.load.image('tie', 'img/tie.png')
     }
 
-    preloadGame(){
-        let play = async ()=>{
+    private preloadGame(): void {
+        let play = async (): Promise<number> =>{
             this.setPlayEnabled(true)
             return this.chosenPromise
         }
 
-        let played = async (x: integer)=>{
+        let played = async (x: integer): Promise<void> =>{
             this.setPlayEnabled(false)
             this.setAbsolutePosition(x)
             this.letStoneFall()
             return this.playedPromise
         }
 
-        let gameEnded = async (winner: integer)=>{
+        let gameEnded = async (winner: integer): Promise<void> =>{
             this.setPlayEnabled(false)
             this.stone.setVisible(false)
             this.gameEnded(winner)
@@ -65,25 +66,25 @@ export default class GameScene extends Phaser.Scene {
 
         this.connect4Play = new Connect4Play()
         this.connect4Play.init(play, played, gameEnded)
-        .then((player)=>{
-            this.setupPlayer(player)
-            this.loading.destroy()
-            this.loading = null
-            return this.connect4Play.play()
-        }).then(()=>{},(error)=>{
-            this.showNotSupported()
-        })
+            .then((player): Promise<void> =>{
+                this.setupPlayer(player)
+                this.loading.destroy()
+                this.loading = null
+                return this.connect4Play.play()
+            }).then((): void =>{},(): void =>{
+                this.showNotSupported()
+            })
     }
 
-    setPlayEnabled(enabled: boolean){
+    private setPlayEnabled(enabled: boolean): void {
         this.enabled = enabled
         if(!enabled) this.chosenPromise = null
-        else this.chosenPromise = new Promise((success,error)=>{
+        else this.chosenPromise = new Promise((success: (x: number) => void): void =>{
             this.choose = success
         })
     }
     
-    getIndex(x: integer){
+    private getIndex(x: integer): integer{
         if(x<48) return 0
         if(x>48+15*6) return 6
         else {
@@ -91,40 +92,40 @@ export default class GameScene extends Phaser.Scene {
         }
     }
 
-    getAbsolutePos(index: integer){
+    private getAbsolutePos(index: integer): number{
         return 48+15*index
     }    
 
-    setAbsolutePosition(index: integer){
+    private setAbsolutePosition(index: integer): void {
         this.stone.body.pos.x = this.getAbsolutePos(index)
     }
 
-    letStoneFall(){
+    private letStoneFall(): void {
         this.stone.setGravity(20)
-        this.playedPromise =  new Promise((success,error)=>{
+        this.playedPromise =  new Promise((success): void =>{
             this.played = success
         })
     }
 
-    setupPlayer(player: integer){
+    private setupPlayer(player: integer): void {
         this.player = player
         if(this.stone!=null){
             this.stone.setGravity(0.0)
             this.stone.setFixedCollision()
         }
         this.stone = this.impact.add.image(100, 40, player<0 ? 'redcircle' : 
-        'yellowcircle')
+            'yellowcircle')
         this.stone.setGravity(0.0)
         this.stone.setActiveCollision()
     }
 
-    nextPlayer(){
+    private nextPlayer(): void {
         this.setupPlayer(-this.player)
         this.played()
     }
 
 
-    gameEnded(outcome: integer){
+    private gameEnded(outcome: integer): void {
 
         let filter = this.add.rectangle(10, 10, 1000, 1000, 0x666666)
         filter.depth = 3
@@ -141,11 +142,8 @@ export default class GameScene extends Phaser.Scene {
             ease: 'Quadratic',
             delay: 0,
             alpha: {
-                getStart: () => 0,
-                getEnd: () => 0.5
-            },
-            onComplete: () => {
-                // Handle completion
+                getStart: (): number => 0,
+                getEnd: (): number => 0.5
             }
         })
 
@@ -155,38 +153,38 @@ export default class GameScene extends Phaser.Scene {
             ease: 'Quadratic',
             delay: 0,
             alpha: {
-                getStart: () => 0,
-                getEnd: () => 1
+                getStart: (): number => 0,
+                getEnd: (): number => 1
             },
-            onComplete: () => {
-                setTimeout(()=>{
+            onComplete: (): void => {
+                setTimeout((): void =>{
                     this.stone = null
-                    this.scene.restart();
+                    this.scene.restart()
                 }, 5000)
             }
         })
     }
 
-    showNotSupported(){
-        let notsupported = this.add.image(100, 75, 'notsupported');
+    private showNotSupported(): void {
+        let notsupported = this.add.image(100, 75, 'notsupported')
         notsupported.depth = 5
     }
 
-    update(){
+    public update(): void {
         if(this.loading!=null) this.loading.update()
     }
 
-    create ()
+    public create (): void
     {
     
         this.loading = new Loading()
         this.loading.create(this)
 
-        var board = this.add.image(100, 91, 'board');
-        var background = this.add.image(100, 75, 'background');
-        this.add.image(155, 8, 'playervsgpu');
-        this.impact.world.setBounds(0, 0, this.worldBounds.width, this.worldBounds.height, undefined);
-        this.impact.world.on('collide', (bodyA: any, bodyB: any)=>{
+        var board = this.add.image(100, 91, 'board')
+        this.add.image(100, 75, 'background')
+        this.add.image(155, 8, 'playervsgpu')
+        this.impact.world.setBounds(0, 0, this.worldBounds.width, this.worldBounds.height, undefined)
+        this.impact.world.on('collide', (bodyA: Phaser.Physics.Impact.Body, bodyB: Phaser.Physics.Impact.Body): void =>{
             if(bodyA===this.stone.body || bodyB===this.stone.body){
                 this.nextPlayer()
             }
@@ -194,11 +192,11 @@ export default class GameScene extends Phaser.Scene {
         
         board.depth = 2
 
-        var bottom = this.impact.add.image(100, 130, 'bottom');
+        var bottom = this.impact.add.image(100, 130, 'bottom')
         bottom.setFixedCollision()
         bottom.setGravity(0)
     
-        this.input.on('pointermove', (pointer: any)=>{
+        this.input.on('pointermove', (pointer: Phaser.Input.Pointer): void =>{
             if (this.stone && this.enabled)
             {
                 let x = pointer.position.x
@@ -207,7 +205,7 @@ export default class GameScene extends Phaser.Scene {
             }
         }, this)
 
-        this.input.on('pointerup', async (pointer: any)=>{
+        this.input.on('pointerup', async (pointer: Phaser.Input.Pointer): Promise<void> =>{
             if (this.enabled){
                 let x = pointer.position.x
                 let idx = this.getIndex(x)

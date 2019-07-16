@@ -1,22 +1,26 @@
 import { Tensor } from '@tensorflow/tfjs';
-import * as tf from '@tensorflow/tfjs';
 export default class Board {
     height: integer;
     width: integer;
-    win_length: integer;
-    np_pieces: Tensor;
+    winLength: integer;
+    npPieces: Tensor;
     static readonly DEFAULT_HEIGHT: integer;
     static readonly DEFAULT_WIDTH: integer;
     static readonly DEFAULT_WIN_LENGTH: integer;
-    constructor(params: any);
+    constructor(params: {
+        height: integer;
+        width: integer;
+        winLength: integer;
+        npPieces: Tensor;
+    });
     addStone(column: integer, player: integer): Promise<void>;
-    getValidMoves(): Tensor<tf.Rank>;
+    getValidMoves(): Tensor;
     getWinState(): {
         isEnded: boolean;
-        winner: number;
+        winner: integer;
     };
-    isStraightWinner(player_pieces: Tensor): boolean;
-    isDiagonalWinner(player_pieces: Tensor): boolean;
-    withNpPieces(np_pieces: Tensor): Board;
+    private isStraightWinner;
+    private isDiagonalWinner;
+    withNpPieces(npPieces: Tensor): Board;
     toString(): string;
 }

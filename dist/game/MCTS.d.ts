@@ -11,7 +11,10 @@ export default class MCTS {
     private Ps;
     private Es;
     private Vs;
-    constructor(game: Connect4Game, nnet: NNet, args: any);
+    constructor(game: Connect4Game, nnet: NNet, args: {
+        numMCTSSims: number;
+        cpuct: number;
+    });
     getActionProb(canonicalBoard: Tensor, temp?: number): Promise<number[]>;
     search(canonicalBoard: Tensor): Promise<number>;
 }

@@ -1,55 +1,60 @@
-import { Tensor } from '@tensorflow/tfjs';
+import { Tensor } from '@tensorflow/tfjs'
 import * as tf from '@tensorflow/tfjs'
 
-export default class Board {
+export default class Board{
 
-    public height : integer
-    public width : integer
-    public win_length : integer
-    public np_pieces : Tensor
+    public height: integer
+    public width: integer
+    public winLength: integer
+    public npPieces: Tensor
 
-    public static readonly DEFAULT_HEIGHT : integer = 6
-    public static readonly DEFAULT_WIDTH : integer  = 7
-    public static readonly DEFAULT_WIN_LENGTH : integer = 4
+    public static readonly DEFAULT_HEIGHT: integer = 6
+    public static readonly DEFAULT_WIDTH: integer  = 7
+    public static readonly DEFAULT_WIN_LENGTH: integer = 4
 
-    constructor(params: any){
-        if(!params) params = {}
+    public constructor(params: {
+        height: integer;
+        width: integer; 
+        winLength: integer;
+        npPieces: Tensor;
+    }){
+        if(!params) params = {height: null, width: null, winLength: null, npPieces: null}
         this.height = params.height || Board.DEFAULT_HEIGHT
         this.width = params.width || Board.DEFAULT_WIDTH
-        this.win_length = params.win_length || Board.DEFAULT_WIN_LENGTH
-        if(!params.np_pieces){
-            this.np_pieces = tf.zeros([this.height, this.width])
+        this.winLength = params.winLength || Board.DEFAULT_WIN_LENGTH
+        if(!params.npPieces){
+            this.npPieces = tf.zeros([this.height, this.width])
         } else {
-            this.np_pieces = params.np_pieces
-            if(this.np_pieces.shape[0] !=this.height || 
-                this.np_pieces.shape[1] != this.width) throw new Error()
+            this.npPieces = params.npPieces
+            if(this.npPieces.shape[0] !=this.height || 
+                this.npPieces.shape[1] != this.width) throw new Error()
         }
     }
 
-    async addStone(column: integer, player: integer){
-        let cond = this.np_pieces.slice([0,column],[this.np_pieces.shape[0],1]).equal(0.0)
+    public async addStone(column: integer, player: integer): Promise<void>{
+        let cond = this.npPieces.slice([0,column],[this.npPieces.shape[0],1]).equal(0.0)
         let idxs = await tf.whereAsync(cond)
         if(idxs.size>0){
             let idxsData = await idxs.array()
             let idxData = idxsData[idxsData.length-1][0]
-            let buffer = await this.np_pieces.buffer()
+            let buffer = await this.npPieces.buffer()
             buffer.set(player, idxData, column)
-            this.np_pieces = buffer.toTensor()
+            this.npPieces = buffer.toTensor()
         }
     }
     
-    getValidMoves(){
-        return this.np_pieces.slice([0],[1]).equal(0)
+    public getValidMoves(): Tensor{
+        return this.npPieces.slice([0],[1]).equal(0)
     }
 
-    getWinState(){
+    public getWinState(): {isEnded: boolean; winner: integer}{
         let players = [-1,1]
         for(let i=0;i<players.length;i++){
             let player = players[i]
-            let player_pieces = this.np_pieces.equal(player)
-            if(this.isStraightWinner(player_pieces) ||
-                this.isStraightWinner(player_pieces.transpose()) ||
-                this.isDiagonalWinner(player_pieces)
+            let playerPieces = this.npPieces.equal(player)
+            if(this.isStraightWinner(playerPieces) ||
+                this.isStraightWinner(playerPieces.transpose()) ||
+                this.isDiagonalWinner(playerPieces)
             ) return {isEnded: true, winner: player}
         }
 
@@ -60,49 +65,48 @@ export default class Board {
         return {isEnded: false, winner: null}
     }
 
-    isStraightWinner(player_pieces: Tensor){
-        let run_lengths = []
-        for(let i=0;i<player_pieces.shape[1]-this.win_length+1;i++){
-            let max_run_length = player_pieces
-            .slice([0,i],[player_pieces.shape[0],this.win_length])
-            .sum(1)
-            .max()
-            if(max_run_length.dataSync()[0]>=this.win_length) return true
+    private isStraightWinner(playerPieces: Tensor): boolean{
+        for(let i=0;i<playerPieces.shape[1]-this.winLength+1;i++){
+            let maxRunLength = playerPieces
+                .slice([0,i],[playerPieces.shape[0],this.winLength])
+                .sum(1)
+                .max()
+            if(maxRunLength.dataSync()[0]>=this.winLength) return true
         }
         return false
     }
 
-    isDiagonalWinner(player_pieces: Tensor){
-        let data : number[][] = <number[][]> player_pieces.arraySync()
-        for(let i=0;i<player_pieces.shape[0]-this.win_length+1;i++){
+    private isDiagonalWinner(playerPieces: Tensor): boolean{
+        let data: number[][] = playerPieces.arraySync() as number[][]
+        for(let i=0;i<playerPieces.shape[0]-this.winLength+1;i++){
 
-            for(let j=0;j<player_pieces.shape[1]-this.win_length+1;j++){
-                let cond = Array.from(Array(this.win_length).keys())
-                .map((x: number)=>data[i+x][j+x])
-                .every(x=>x)
+            for(let j=0;j<playerPieces.shape[1]-this.winLength+1;j++){
+                let cond = Array.from(Array(this.winLength).keys())
+                    .map((x: number): number=>data[i+x][j+x])
+                    .every((x: number): boolean=>x==1)
                 if(cond) return true
             }
-            for(let j=this.win_length-1;j<player_pieces.shape[1];j++){
-                let cond = Array.from(Array(this.win_length).keys())
-                .map((x: number)=>data[i+x][j-x])
-                .every(x=>x)
+            for(let j=this.winLength-1;j<playerPieces.shape[1];j++){
+                let cond = Array.from(Array(this.winLength).keys())
+                    .map((x: number): number=>data[i+x][j-x])
+                    .every((x: number): boolean=>x==1)
                 if(cond) return true
             }
         }
         return false
     }
 
-    withNpPieces(np_pieces: Tensor){
-        if(np_pieces == null) np_pieces = this.np_pieces
+    public withNpPieces(npPieces: Tensor): Board{
+        if(npPieces == null) npPieces = this.npPieces
         return new Board({
             height: this.height,
             width: this.width,
-            win_length: this.win_length,
-            np_pieces: np_pieces
+            winLength: this.winLength,
+            npPieces: npPieces
         })
     }
 
-    toString(){
-        return this.np_pieces.dataSync().toString()
+    public toString(): string{
+        return this.npPieces.dataSync().toString()
     }
 }

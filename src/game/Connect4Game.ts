@@ -1,41 +1,40 @@
 import Board from "./Board"
-import * as tf from '@tensorflow/tfjs';
-import { Tensor } from '@tensorflow/tfjs';
-import { conditionalExpression } from "@babel/types";
+import * as tf from '@tensorflow/tfjs'
+import { Tensor } from '@tensorflow/tfjs'
 
-export default class Connect4Game {
+export default class Connect4Game{
 
     private board: Board
 
-    constructor(){
-        this.board = new Board({})
+    public constructor(){
+        this.board = new Board(null)
     }
 
-    getInitBoard() : Tensor {
-        return this.board.np_pieces
+    public getInitBoard(): Tensor{
+        return this.board.npPieces
     }
 
-    getBoardSize() : Array<integer> {
+    public getBoardSize(): integer[]{
         return [this.board.height, this.board.width]
     }
 
-    getActionSize(){
+    public getActionSize(): integer{
         return this.board.width
     }
 
-    async getNextState(board : Tensor, player: integer, action: integer){
+    public async getNextState(board: Tensor, player: integer, action: integer): Promise<{board: Tensor; player: integer}>{
         let boardArray = await board.array()
         let b = this.board.withNpPieces(tf.tensor(boardArray))
         await b.addStone(action, player)
-        return {board: b.np_pieces, player: -player}
+        return {board: b.npPieces, player: -player}
     }
 
-    getValidMoves(board: Tensor, player: integer){
+    public getValidMoves(board: Tensor): Tensor{
         return this.board.withNpPieces(board).getValidMoves()
     }
 
-    getGameEnded(board: Tensor, player: integer){
-        let boardObj : Board = this.board.withNpPieces(board)
+    public getGameEnded(board: Tensor, player: integer): number{
+        let boardObj: Board = this.board.withNpPieces(board)
         let winState = boardObj.getWinState()
         if(winState.isEnded){
             if(winState.winner === null) return 1e-4
@@ -45,11 +44,11 @@ export default class Connect4Game {
         } else return 0
     }
 
-    getCanonicalForm(board: Tensor, player: integer){
+    public getCanonicalForm(board: Tensor, player: integer): Tensor{
         return board.mul(player)
     }
 
-    stringRepresentation(board: Tensor){
+    public stringRepresentation(board: Tensor): string{
         return this.board.withNpPieces(board).toString()
     }
 }

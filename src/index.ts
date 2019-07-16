@@ -1,4 +1,4 @@
-import 'phaser'
+import * as Phaser from 'phaser'
 import GameScene from './ui/GameScene'
 import Connect4Game from './ui/Connect4Game'
 
@@ -23,6 +23,6 @@ const config = {
             maxVelocity: 800,
         }
     }
-};
+}
 
-new Connect4Game(config);
+new Connect4Game(config)

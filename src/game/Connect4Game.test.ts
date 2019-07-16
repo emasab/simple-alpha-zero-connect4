@@ -1,6 +1,6 @@
 import Connect4Game from "./Connect4Game"
-import Board from "./Board";
-import { Tensor } from "@tensorflow/tfjs";
+import Board from "./Board"
+import { Tensor } from "@tensorflow/tfjs"
 
 test("getInitBoard", async ()=>{
     let game = new Connect4Game()
@@ -12,13 +12,13 @@ test("getInitBoard", async ()=>{
 
     let sum = await board.sum().array()
     expect(sum)
-    .toBe(0)
+        .toBe(0)
 })
 
 
 test("getNextState", async ()=>{
     let game = new Connect4Game()
-    let initialBoard : Tensor = game.getInitBoard()
+    let initialBoard: Tensor = game.getInitBoard()
     let {board, player} = await game.getNextState(initialBoard, 1, 0)
     let data = await board.data()
     data.every((x: number,i: number)=>{
@@ -31,7 +31,7 @@ test("getNextState", async ()=>{
 
 test("stringRepresentation", ()=>{
     let game = new Connect4Game()
-    let initialBoard : Tensor = game.getInitBoard()
+    let initialBoard: Tensor = game.getInitBoard()
     let repr = game.stringRepresentation(initialBoard)
     expect(repr).toBe("0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0")
 })
