@@ -11,6 +11,7 @@ export default class GameScene extends Phaser.Scene {
     private readonly worldBounds;
     private loading;
     constructor();
+    init(): void;
     preload(): void;
     private preloadGame;
     private setPlayEnabled;

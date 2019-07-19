@@ -30,6 +30,10 @@ export default class GameScene extends Phaser.Scene{
         })
     }
 
+    public init(): void {
+        this.cameras.main.setBackgroundColor('#000000')
+    }
+
     public preload(): void
     {
         this.load.setBaseURL('')
