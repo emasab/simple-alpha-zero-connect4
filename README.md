@@ -29,7 +29,7 @@ https://emasab.github.io/simple-alpha-zero-connect4/dist/
 
 ## Notes
 
-Works on Chrome and Firefox desktop but not on their mobile counterparts
+Works on Chrome and Firefox desktop but not on their mobile counterparts. Needs post-training weight quantization in order to work on mobile GPUs.
 
 ## Acknowledgements:
 
