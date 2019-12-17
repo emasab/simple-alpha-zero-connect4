@@ -4,7 +4,7 @@
   "description": "",
   "private": true,
   "dependencies": {
-    "@tensorflow/tfjs": "^1.0.0",
+    "@tensorflow/tfjs": "^1.4.0",
     "phaser": "^3.17.0"
   },
   "devDependencies": {
@@ -12,7 +12,7 @@
     "@types/node": "^12.0.10",
     "@typescript-eslint/eslint-plugin": "^1.12.0",
     "@typescript-eslint/parser": "^1.12.0",
-    "copy-webpack-plugin": "^5.0.3",
+    "copy-webpack-plugin": "^5.1.1",
     "eslint": "^6.0.1",
     "jest": "^24.8.0",
     "ts-jest": "^24.0.2",

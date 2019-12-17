@@ -27,9 +27,6 @@ https://emasab.github.io/simple-alpha-zero-connect4/dist/
 
 ![Preview of the game](doc/screen.png?raw=true "Preview of the game")
 
-## Notes
-
-Works on Chrome and Firefox desktop but not on their mobile counterparts. Needs post-training float16 quantization in order to work on mobile GPUs.
 
 ## Acknowledgements:
 
